@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Bird</title>
+    <style>
+        canvas {
+            border: 1px solid #000;
+            display: block;
+            margin: auto;
+        }
+        #menu, #gameOverMenu {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            padding: 20px;
+        }
+        .button {
+            display: inline-block;
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="320" height="480"></canvas>
+    <div id="menu">
+        <button class="button" onclick="startGame()">Play</button>
+    </div>
+    <div id="gameOverMenu">
+        <button class="button" onclick="restartGame()">Restart</button>
+        <button class="button" onclick="showMenu()">Menu</button>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
