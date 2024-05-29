@@ -10,18 +10,17 @@
             display: block;
             margin: auto;
         }
-        #menu, #gameOverMenu {
+        #menu, #gameOverMenu, #highscoreMenu {
             display: none;
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            padding: 20px;
         }
         .button {
             display: inline-block;
-            margin: 5px;
+            margin: 10px;
             padding: 10px 20px;
             font-size: 18px;
             background-color: #4CAF50;
@@ -29,15 +28,99 @@
             border: none;
             cursor: pointer;
         }
+        .color-picker {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            margin: 5px;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+        .color-picker.selected {
+            border-color: black;
+        }
+        .menu-section {
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        #highscoreMenu {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            padding: 20px; /* Abstand zum Inhalt */
+        }
+
+        #highscoreMenu h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        #highscoreList {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #highscoreList li {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        #highscoreList li span.player {
+            font-weight: bold;
+            font-size: 20px;
+            display: inline-block;
+            width: 100px; /* Setze die Breite für Spielername */
+            text-align: right; /* Ausrichtung der Spieler */
+        }
+
+        #highscoreList li span.score {
+            margin-left: 10px;
+        }
+
     </style>
 </head>
 <body>
     <canvas id="canvas" width="320" height="480"></canvas>
     <div id="menu">
-        <button class="button" onclick="startGame()">Play</button>
+        <h1>Fluppy Bird</h1>
+        <div class="menu-section">
+            <button class="button" onclick="startGame()">Play</button>
+            <button class="button" onclick="showHighscores()">Highscores</button>
+        </div>
+        <div class="menu-section">
+            <span>Select Player:</span>
+            <select id="playerSelect">
+                <option value="Player 1">Player 1</option>
+                <option value="Player 2">Player 2</option>
+                <option value="Player 3">Player 3</option>
+                <option value="Player 4">Player 4</option>
+                <option value="Player 5">Player 5</option>
+            </select>
+        </div>
+        <div class="menu-section">
+            <span>Select Bird Color:</span>
+            <div id="colorPickerContainer">
+                <div class="color-picker" style="background-color: yellow;" data-color="yellow"></div>
+                <div class="color-picker" style="background-color: red;" data-color="red"></div>
+                <div class="color-picker" style="background-color: green;" data-color="green"></div>
+                <div class="color-picker" style="background-color: blue;" data-color="blue"></div>
+                <div class="color-picker" style="background-color: orange;" data-color="orange"></div>
+            </div>
+        </div>
     </div>
     <div id="gameOverMenu">
         <button class="button" onclick="restartGame()">Restart</button>
+        <button class="button" onclick="showMenu()">Menu</button>
+    </div>
+    <div id="highscoreMenu">
+        <h2>Highscores</h2>
+        <ul id="highscoreList"></ul>
         <button class="button" onclick="showMenu()">Menu</button>
     </div>
     <script src="game.js"></script>

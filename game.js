@@ -2,8 +2,14 @@ const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const menu = document.getElementById('menu');
 const gameOverMenu = document.getElementById('gameOverMenu');
+const highscoreMenu = document.getElementById('highscoreMenu');
+const highscoreList = document.getElementById('highscoreList');
+const playerSelect = document.getElementById('playerSelect');
+const colorPickerContainer = document.getElementById('colorPickerContainer');
 
-// Spielvariablen
+let selectedPlayer = 'Player 1';
+let selectedColor = 'yellow';
+
 const bird = {
     x: 50,
     y: 150,
@@ -21,40 +27,89 @@ let frameCount = 0;
 let score = 0;
 let gameOver = false;
 
-// Hintergrundbild
 const bgImage = new Image();
 bgImage.src = 'fluppy_bg.jpeg';
 
-function showMenu() {
-    menu.style.display = 'block';
+const flapSound = new Audio('sfx_wing.mp3');
+const dieSound = new Audio('sfx_die.mp3');
+
+colorPickerContainer.addEventListener('click', (e) => {
+    if (e.target.classList.contains('color-picker')) {
+        document.querySelectorAll('.color-picker').forEach(picker => {
+            picker.classList.remove('selected');
+        });
+        e.target.classList.add('selected');
+        selectedColor = e.target.getAttribute('data-color');
+    }
+});
+
+function loadHighscores() {
+    try {
+        const data = localStorage.getItem('highscores');
+        return data ? JSON.parse(data) : [];
+    } catch (err) {
+        console.error('Error loading highscores:', err);
+        return [];
+    }
+}
+
+function saveHighscores(highscores) {
+    try {
+        localStorage.setItem('highscores', JSON.stringify(highscores));
+    } catch (err) {
+        console.error('Error saving highscores:', err);
+    }
+}
+
+function showHighscores() {
+    const highscores = loadHighscores();
+    const sortedHighscores = highscores.sort((a, b) => b.score - a.score);
+    const top5 = sortedHighscores.slice(0, 5);
+
+    highscoreList.innerHTML = '';
+
+    top5.forEach((entry, index) => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `${index + 1}. ${entry.name}: ${entry.score}`;
+        highscoreList.appendChild(listItem);
+    });
+
+    highscoreMenu.style.display = 'block';
+    menu.style.display = 'none';
     gameOverMenu.style.display = 'none';
     canvas.style.display = 'none';
 }
 
+function showMenu() {
+    menu.style.display = 'block';
+    gameOverMenu.style.display = 'none';
+    highscoreMenu.style.display = 'none';
+    canvas.style.display = 'none';
+}
+
 function startGame() {
+    selectedPlayer = playerSelect.value;
     menu.style.display = 'none';
     canvas.style.display = 'block';
     resetGame();
     update();
 }
 
-// Steuerelemente
 document.addEventListener('keydown', (e) => {
     if (e.code === 'Space' && !gameOver) {
         bird.velocity = bird.lift;
+        flapSound.currentTime = 0;
+        flapSound.play();
     }
 });
 
-// Spielfunktion
 function update() {
     if (gameOver) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Hintergrundbild
     ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
 
-    // Vogel
     bird.velocity += bird.gravity;
     bird.y += bird.velocity;
 
@@ -62,10 +117,9 @@ function update() {
         endGame();
     }
 
-    ctx.fillStyle = 'yellow';
+    ctx.fillStyle = selectedColor;
     ctx.fillRect(bird.x, bird.y, bird.width, bird.height);
 
-    // Röhren
     if (frameCount % 90 === 0) {
         const pipeHeight = Math.floor(Math.random() * (canvas.height - pipeGap));
         pipes.push({
@@ -82,14 +136,10 @@ function update() {
             score++;
         }
 
-        // obere Röhre
         ctx.fillStyle = 'green';
         ctx.fillRect(pipe.x, 0, pipeWidth, pipe.y);
-
-        // untere Röhre
         ctx.fillRect(pipe.x, pipe.y + pipeGap, pipeWidth, canvas.height - pipe.y - pipeGap);
 
-        // Kollisionserkennung
         if (
             bird.x < pipe.x + pipeWidth &&
             bird.x + bird.width > pipe.x &&
@@ -99,22 +149,27 @@ function update() {
         }
     });
 
-    // Punkte
-    ctx.fillStyle = 'black';
-    ctx.font = '16px Arial';
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 20px Arial';
     ctx.fillText(`Score: ${score}`, 10, 20);
 
     frameCount++;
     requestAnimationFrame(update);
 }
 
-// Spiel beenden
 function endGame() {
     gameOver = true;
+    dieSound.currentTime = 0;
+    dieSound.play();
     gameOverMenu.style.display = 'block';
+
+    const highscores = loadHighscores();
+    highscores.push({ name: selectedPlayer, score: score });
+    highscores.sort((a, b) => b.score - a.score);
+    highscores.splice(5);
+    saveHighscores(highscores);
 }
 
-// Spiel zurücksetzen
 function resetGame() {
     bird.y = 150;
     bird.velocity = 0;
@@ -125,11 +180,9 @@ function resetGame() {
     gameOverMenu.style.display = 'none';
 }
 
-// Spiel neustarten
 function restartGame() {
     resetGame();
     update();
 }
 
-// Initiale Anzeige des Menüs
 showMenu();
