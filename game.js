@@ -100,7 +100,7 @@ canvas.addEventListener('click', handleInput);
 canvas.addEventListener('touchstart', handleInput);
 
 function handleInput(e) {
-    if (!gameOver && (e.type === 'click' || e.type === 'touchstart')) {
+    if (!gameOver && (e.type === 'click' || e.type === 'touchstart') && bird.velocity >= 0) {
         bird.velocity = bird.lift;
         flapSound.currentTime = 0;
         flapSound.play();
