@@ -80,6 +80,7 @@ function showHighscores() {
     canvas.style.display = 'none';
 }
 
+
 function showMenu() {
     menu.style.display = 'block';
     gameOverMenu.style.display = 'none';
