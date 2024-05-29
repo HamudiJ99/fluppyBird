@@ -96,6 +96,17 @@ function startGame() {
     update();
 }
 
+canvas.addEventListener('click', handleInput);
+canvas.addEventListener('touchstart', handleInput);
+
+function handleInput(e) {
+    if (!gameOver && (e.type === 'click' || e.type === 'touchstart')) {
+        bird.velocity = bird.lift;
+        flapSound.currentTime = 0;
+        flapSound.play();
+    }
+}
+
 document.addEventListener('keydown', (e) => {
     if (e.code === 'Space' && !gameOver) {
         bird.velocity = bird.lift;
