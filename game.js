@@ -22,16 +22,22 @@ const bird = {
 
 const pipes = [];
 const pipeWidth = 30;
-const pipeGap = 120; // Kleinerer Abstand zwischen den Röhren
+const pipeGap = 120;
 let frameCount = 0;
 let score = 0;
 let gameOver = false;
+let powerUp = null;
+let powerUpActive = false;
+let powerUpEndTime = 0;
+let nextPowerUpTime = getRandomPowerUpTime();
 
 const bgImage = new Image();
 bgImage.src = 'fluppy_bg.jpeg';
 
 const flapSound = new Audio('sfx_wing.mp3');
 const dieSound = new Audio('sfx_die.mp3');
+const powerUpImage = new Image();
+powerUpImage.src = 'star.png';
 
 colorPickerContainer.addEventListener('click', (e) => {
     if (e.target.classList.contains('color-picker')) {
@@ -80,7 +86,6 @@ function showHighscores() {
     canvas.style.display = 'none';
 }
 
-
 function showMenu() {
     menu.style.display = 'block';
     gameOverMenu.style.display = 'none';
@@ -107,8 +112,6 @@ function handleInput(e) {
     }
 }
 
-
-
 document.addEventListener('keydown', (e) => {
     if (e.code === 'Space' && !gameOver) {
         bird.velocity = bird.lift;
@@ -117,11 +120,42 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
+function createPowerUp() {
+    let powerUpX, powerUpY;
+
+    do {
+        powerUpX = Math.random() * (canvas.width - 100) + 50;  // Power-Up nicht zu weit links oder rechts
+        powerUpY = Math.random() * (canvas.height - 100) + 50; // Power-Up nicht zu weit oben oder unten
+    } while (isPositionBlockedByPipes(powerUpX, powerUpY));
+
+    powerUp = { x: powerUpX, y: powerUpY, width: 30, height: 30 };
+}
+
+function getRandomPowerUpTime() {
+    // Returns a random time between 4 and 15 seconds in frames (assuming 60 FPS)
+    return frameCount + Math.floor(Math.random() * 900) + 240;
+}
+
+function isPositionBlockedByPipes(xPosition, yPosition) {
+    for (const pipe of pipes) {
+        const topPipeBottom = pipe.y;
+        const bottomPipeTop = pipe.y + pipeGap;
+
+        // Prüfen, ob Power-Up horizontal in der Nähe der Säule liegt
+        if (xPosition > pipe.x && xPosition < pipe.x + pipeWidth) {
+            // Prüfen, ob Power-Up vertikal innerhalb der Lücke liegt
+            if (yPosition > topPipeBottom && yPosition < bottomPipeTop) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 function update() {
     if (gameOver) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
 
     bird.velocity += bird.gravity;
@@ -147,7 +181,7 @@ function update() {
 
         if (pipe.x + pipeWidth < 0) {
             pipes.splice(index, 1);
-            score++;
+            score += powerUpActive ? 2 : 1;
         }
 
         ctx.fillStyle = 'green';
@@ -162,6 +196,33 @@ function update() {
             endGame();
         }
     });
+
+    if (powerUp && powerUp.x + powerUp.width > 0) {
+        powerUp.x -= 2;
+        ctx.drawImage(powerUpImage, powerUp.x, powerUp.y, powerUp.width, powerUp.height);
+
+        if (
+            bird.x < powerUp.x + powerUp.width &&
+            bird.x + bird.width > powerUp.x &&
+            bird.y < powerUp.y + powerUp.height &&
+            bird.y + bird.height > powerUp.y
+        ) {
+            powerUp = null;
+            powerUpActive = true;
+            powerUpEndTime = frameCount + 300; // 5 Sekunden bei 60 FPS
+        }
+    } else if (frameCount >= nextPowerUpTime) {
+        createPowerUp();
+        nextPowerUpTime = getRandomPowerUpTime();
+    }
+
+    if (powerUpActive) {
+        if (frameCount > powerUpEndTime) {
+            powerUpActive = false;
+        } else {
+            ctx.drawImage(powerUpImage, 280, 10, 30, 30);
+        }
+    }
 
     ctx.fillStyle = 'white';
     ctx.font = 'bold 20px Arial';
@@ -191,6 +252,9 @@ function resetGame() {
     score = 0;
     frameCount = 0;
     gameOver = false;
+    powerUp = null;
+    powerUpActive = false;
+    nextPowerUpTime = getRandomPowerUpTime();
     gameOverMenu.style.display = 'none';
 }
 
